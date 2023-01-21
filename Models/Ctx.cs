@@ -34,7 +34,7 @@ namespace Models
                 p.HasKey(x => new { x.ID, x.Tipo });
                 p.Property(x => x.ID).HasColumnName("ID");
                 p.Property(x => x.Tipo).HasColumnName("Tipo");
-                p.Property(x => x.Descripcion).HasColumnName("Descripcion");
+                p.Property(x => x.Nombre).HasColumnName("Descripcion");
                 p.Property(x => x.statusID).HasColumnName("statusID");
                 p.Property(x => x.creado).HasColumnName("creado");
                 p.Property(x => x.actualizado).HasColumnName("actualizado");

@@ -5,7 +5,6 @@ using Hlp;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace App
 {
     public class PersonaApp : Application
@@ -25,7 +24,7 @@ namespace App
                                 ID = p.ID,
                                 statusID = p.statusID,
                                 Tipo = p.Tipo,
-                                Descripcion = p.Descripcion,
+                                Nombre = p.Nombre,
                                 creado = p.creado,
                                 actualizado = p.actualizado,
                                 tipoDescripcion = t.Tipo

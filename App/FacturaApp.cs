@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using LiteDB;
 using Hlp;
+using System.Threading.Tasks;
 
 namespace App
 {
@@ -29,7 +30,7 @@ namespace App
                 foreach (string factura in this.getFacturaName())
                 {
                     readXML(factura);
-                    Directory.Move($"{pathFolder}{factura}", $"{dest}{factura}");
+                    Directory.Move(factura, $"{dest}{factura.Split('/').Last()}");
                 }
             }
             catch (System.Exception ex)
@@ -87,13 +88,27 @@ namespace App
                     }
                 }
 
+                Persona emisorFactura = this.personaFactura("Emisor", root, ns).Result;
+                Persona receptorFactura = this.personaFactura("Receptor", root, ns).Result;
+
+                #region UUID
+                XNamespace tfd = "http://www.sat.gob.mx/TimbreFiscalDigital";
+                IEnumerable<XElement> timbre = root.Descendants(tfd + "TimbreFiscalDigital");
+                if (timbre.Count() != 1)
+                {
+                    throw new Exception("Error con el timbre del documento, verificar");
+                }
+
+                string UUID = timbre.FirstOrDefault().Attribute("UUID").Value;
+                #endregion
+
                 using (LiteDatabase db = new LiteDatabase(this._fctx.getDB()))
                 {
                     ILiteCollection<Factura> facturas = db.GetCollection<Factura>("Factura");
 
                     facturas.Insert(new Factura
                     {
-                        UUID = valores.GetValueOrDefault("UUID"),
+                        UUID = UUID,
                         Serie = valores.GetValueOrDefault("Serie"),
                         Folio = valores.GetValueOrDefault("Folio"),
                         SubTotal = decimalValues.GetValueOrDefault("SubTotal"),
@@ -104,12 +119,13 @@ namespace App
                         metodo = valores.GetValueOrDefault("MetodoPago"),
                         fechaPago = DateTime.Parse(valores.GetValueOrDefault("Fecha")),
                         forma = valores.GetValueOrDefault("FormaPago"),
+                        emisor = emisorFactura.ID,
+                        receptor = receptorFactura.ID
                     });
 
                     ILiteCollection<Concepto> conceptos = db.GetCollection<Concepto>("Concepto");
                     IEnumerable<XElement> concepts = root.Descendants(ns + "Concepto");
 
-                    string UUID = valores.GetValueOrDefault("UUID");
 
                     foreach (XElement concepto in concepts)
                     {
@@ -121,9 +137,9 @@ namespace App
 
                         conceptos.Insert(new Concepto
                         {
-                            UUID = UUID
-                            ClaveProdServ = valores.GetValueOrDefault("ClaveProdServ")
-                            Descripcion = valores.GetValue("Descripcion"),
+                            UUID = UUID,
+                            ClaveProdServ = valores.GetValueOrDefault("ClaveProdServ"),
+                            Descripcion = valores.GetValueOrDefault("Descripcion"),
                             ValorUnitario = decimalValues.GetValueOrDefault("ValorUnitario"),
                             Cantidad = decimalValues.GetValueOrDefault("Cantidad"),
                             Importe = decimalValues.GetValueOrDefault("Importe")
@@ -204,6 +220,34 @@ namespace App
             return true;
         }
 
+        private async Task<Persona> personaFactura(string tipo, IEnumerable<XElement> root, XNamespace ns)
+        {
+            Persona persona = new Persona();
+            IEnumerable<XElement> personasFactura = root.Descendants(ns + tipo);
 
+            if (personasFactura.Count() != 1)
+            {
+                throw new Exception($"Hay más de un {tipo} en la factura, revisar archivo");
+            }
+
+            XElement personaFactura = personasFactura.FirstOrDefault();
+            string rfc = personaFactura.Attribute("Rfc").Value;
+            persona = this._ctx.Persona.FirstOrDefault(x => x.ID == rfc);
+
+            if (persona == null)
+            {
+                persona = new Persona
+                {
+                    ID = rfc,
+                    Nombre = personaFactura.Attribute("Nombre").Value,
+                    Tipo = rfc.Count() < 13 ? 'M' : 'F',
+                    statusID = 'A'
+                };
+                this._ctx.Persona.Add(persona);
+
+                await this._ctx.SaveChangesAsync();
+            }
+            return persona;
+        }
     }
 }
