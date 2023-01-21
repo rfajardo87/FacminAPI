@@ -21,7 +21,7 @@ namespace App
 
         }
 
-        public bool nuevasFacturas()
+        public async Task<bool> nuevasFacturas()
         {
             bool status = true;
             try
@@ -29,7 +29,7 @@ namespace App
                 this.checkOrCreatePath(dest);
                 foreach (string factura in this.getFacturaName())
                 {
-                    readXML(factura);
+                    await readXML(factura);
                     Directory.Move(factura, $"{dest}{factura.Split('/').Last()}");
                 }
             }
@@ -41,12 +41,12 @@ namespace App
             return status;
         }
 
-        private void readXML(string file)
+        private async Task readXML(string file)
         {
             try
             {
                 XDocument doc = XDocument.Load(file);
-                this.facturaRecord(doc);
+                await this.facturaRecord(doc);
 
             }
             catch (System.Exception ex)
@@ -56,7 +56,7 @@ namespace App
             }
         }
 
-        private void facturaRecord(XDocument node)
+        private async Task facturaRecord(XDocument node)
         {
             try
             {
@@ -88,8 +88,8 @@ namespace App
                     }
                 }
 
-                Persona emisorFactura = this.personaFactura("Emisor", root, ns).Result;
-                Persona receptorFactura = this.personaFactura("Receptor", root, ns).Result;
+                Persona emisorFactura = await this.personaFactura("Emisor", root, ns);
+                Persona receptorFactura = await this.personaFactura("Receptor", root, ns);
 
                 #region UUID
                 XNamespace tfd = "http://www.sat.gob.mx/TimbreFiscalDigital";
