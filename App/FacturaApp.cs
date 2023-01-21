@@ -68,7 +68,7 @@ namespace App
                 const string main = "Comprobante";
                 Dictionary<string, string> valores = new Dictionary<string, string>();
                 Dictionary<string, decimal> decimalValues = new Dictionary<string, decimal>();
-                string[] decimalStrings = new string[] { "subtotal", "iva", "total", "original" };
+                string[] decimalStrings = new string[] { "SubTotal", "iva", "Total", "original" };
                 string attKey = "";
                 decimal swapDecimal = 0;
                 IEnumerable<XElement> root = node.Descendants(ns + main);
@@ -94,25 +94,26 @@ namespace App
                     facturas.Insert(new Factura
                     {
                         UUID = valores.GetValueOrDefault("UUID"),
-                        serie = valores.GetValueOrDefault("serie"),
-                        folio = valores.GetValueOrDefault("folio"),
-                        subtotal = decimalValues.GetValueOrDefault("subtotal"),
+                        Serie = valores.GetValueOrDefault("Serie"),
+                        Folio = valores.GetValueOrDefault("Folio"),
+                        SubTotal = decimalValues.GetValueOrDefault("SubTotal"),
                         iva = decimalValues.GetValueOrDefault("iva"),
-                        total = decimalValues.GetValueOrDefault("total"),
+                        Total = decimalValues.GetValueOrDefault("Total"),
                         original = decimalValues.GetValueOrDefault("original"),
-                        moneda = valores.GetValueOrDefault("moneda"),
-                        metodo = valores.GetValueOrDefault("metodo"),
+                        moneda = valores.GetValueOrDefault("Moneda"),
+                        metodo = valores.GetValueOrDefault("MetodoPago"),
                         fechaPago = DateTime.Parse(valores.GetValueOrDefault("Fecha")),
                         forma = valores.GetValueOrDefault("FormaPago"),
-
                     });
 
                     ILiteCollection<Concepto> conceptos = db.GetCollection<Concepto>("Concepto");
                     IEnumerable<XElement> concepts = root.Descendants(ns + "Concepto");
 
+                    string UUID = valores.GetValueOrDefault("UUID");
+
                     foreach (XElement concepto in concepts)
                     {
-                        decimalValues = new Dictionary<string, decimal>();
+                        valores = new Dictionary<string, string>();
                         foreach (XAttribute att in concepto.Attributes())
                         {
                             valores.Add($"{att.Name}", att.Value);
@@ -120,12 +121,12 @@ namespace App
 
                         conceptos.Insert(new Concepto
                         {
-                            UUID = valores.GetValueOrDefault("UUID"),
-                            ID = conceptos.Count() + 1,
-                            concepto = concepto.Attribute("concepto").Value,
-                            pu = decimalValues.GetValueOrDefault("ValorUnitario"),
-                            cantidad = decimalValues.GetValueOrDefault("Cantidad"),
-                            sub = decimalValues.GetValueOrDefault("Importe")
+                            UUID = UUID
+                            ClaveProdServ = valores.GetValueOrDefault("ClaveProdServ")
+                            Descripcion = valores.GetValue("Descripcion"),
+                            ValorUnitario = decimalValues.GetValueOrDefault("ValorUnitario"),
+                            Cantidad = decimalValues.GetValueOrDefault("Cantidad"),
+                            Importe = decimalValues.GetValueOrDefault("Importe")
                         });
                     }
                 }
