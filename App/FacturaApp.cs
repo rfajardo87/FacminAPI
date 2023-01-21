@@ -153,14 +153,19 @@ namespace App
             }
         }
 
-        public Rsp<List<Factura>> getAll()
+        public Rsp<List<Factura>> getAll(int mes, int year)
         {
             Rsp<List<Factura>> rsp = new Rsp<List<Factura>>();
             try
             {
                 using (LiteDatabase db = new LiteDatabase(this._fctx.getDB()))
                 {
-                    List<Factura> facturas = db.GetCollection<Factura>("Factura").FindAll().ToList();
+                    List<Factura> facturas =
+                    db.GetCollection<Factura>("Factura")
+                    .Query()
+                    .Where(x => x.fechaPago.Month.Equals(mes) && x.fechaPago.Year.Equals(year))
+                    .ToList();
+
                     ILiteCollection<Concepto> conceptos = db.GetCollection<Concepto>();
 
                     foreach (Factura f in facturas)
@@ -177,6 +182,28 @@ namespace App
                 rsp.data = null;
                 rsp.tipo = Tipo.Fail;
                 rsp.mensajes.Add(ex.Message);
+            }
+            return rsp;
+        }
+
+        public Rsp<Dictionary<string, int>> pageInfo(int mes, int year, int perPage = 10)
+        {
+            Dictionary<string, int> dRsp = new Dictionary<string, int>();
+            Rsp<Dictionary<string, int>> rsp = new Rsp<Dictionary<string, int>>();
+            rsp.data = dRsp;
+            try
+            {
+
+                decimal total = this.getAll(mes, year).data.Count;
+                dRsp.Add("total", (int)total);
+                decimal pages = total / perPage;
+                dRsp.Add("pages", (int)Math.Ceiling(pages));
+                rsp.tipo = Tipo.Success;
+            }
+            catch (System.Exception ex)
+            {
+                rsp.mensajes.Add(ex.Message);
+                rsp.tipo = Tipo.Fail;
             }
             return rsp;
         }

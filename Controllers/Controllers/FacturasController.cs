@@ -29,13 +29,14 @@ namespace Controllers.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        [Route("{year}/{mes}")]
+        public IActionResult Get(int year, int mes)
         {
             Rsp<List<Factura>> rsp = new Rsp<List<Factura>>();
 
             try
             {
-                rsp = this._factura.getAll();
+                rsp = this._factura.getAll(mes, year);
             }
             catch (Exception ex)
             {
@@ -47,13 +48,30 @@ namespace Controllers.Controllers
             return Ok(rsp);
         }
 
+        [HttpGet]
+        [Route("pageInfo/{year}/{mes}/{perPage}")]
+        public IActionResult pageInfo(int year, int mes, int perPage)
+        {
+            Rsp<Dictionary<string, int>> rsp = new Rsp<Dictionary<string, int>>();
+            try
+            {
+                rsp = this._factura.pageInfo(mes, year, perPage);
+            }
+            catch (System.Exception ex)
+            {
+                rsp.mensajes.Add(ex.Message);
+                rsp.tipo = Tipo.Fail;
+            }
+            return Ok(rsp);
+        }
+
         [HttpPost]
-        public IActionResult Load()
+        public async Task<IActionResult> Load()
         {
             Rsp<List<Factura>> rsp = new Rsp<List<Factura>>();
             try
             {
-                this._factura.nuevasFacturas();
+                await this._factura.nuevasFacturas();
                 rsp.tipo = Tipo.Success;
                 rsp.mensajes.Add($"Facturas cargadas correctamente");
             }
