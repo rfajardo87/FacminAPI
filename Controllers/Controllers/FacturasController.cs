@@ -83,5 +83,21 @@ namespace Controllers.Controllers
             }
             return Ok(rsp);
         }
+
+        [HttpPost("{year}/{mes}")]
+        public IActionResult reporte(int year, int mes)
+        {
+            Rsp<bool> rsp = new Rsp<bool>();
+            try
+            {
+                rsp = this._factura.archivo(year, mes);
+            }
+            catch (System.Exception ex)
+            {
+                rsp.mensajes.Add(ex.Message);
+                rsp.tipo = Tipo.Fail;
+            }
+            return Ok(rsp);
+        }
     }
 }

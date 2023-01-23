@@ -7,6 +7,7 @@ using System.IO;
 using LiteDB;
 using Hlp;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace App
 {
@@ -275,6 +276,52 @@ namespace App
                 await this._ctx.SaveChangesAsync();
             }
             return persona;
+        }
+
+        public Rsp<bool> archivo(int year, int mes)
+        {
+            Rsp<bool> rsp = new Rsp<bool>
+            {
+                data = false
+            };
+            try
+            {
+                string reportPath = $"{root}reportes";
+                this.checkOrCreatePath(reportPath);
+
+                Rsp<List<Factura>> facturas = this.getAll(mes, year);
+
+                if (facturas.tipo == Tipo.Fail)
+                {
+                    rsp.mensajes.AddRange(facturas.mensajes);
+                    throw new Exception();
+                }
+                string fileName = $"{year}_{mes}_reporte.csv";
+                using (StreamWriter sw = File.CreateText($"{reportPath}/{fileName}"))
+                {
+                    #region propiedades
+                    string[] exclude = new string[] { "conceptos", "creado", "actualizado" };
+                    PropertyInfo[] headers = facturas.data[0].GetType().GetProperties().Where(p => !exclude.Contains(p.Name)).ToArray();
+
+                    sw.WriteLine(String.Join(',', headers.Select(h => $"\"{h.Name}\"")));
+                    foreach (Factura f in facturas.data)
+                    {
+                        string line = String.Join(',', headers.Select(h => $"\"{h.GetValue(f)}\""));
+                        sw.WriteLine(line);
+                    }
+                    #endregion
+                }
+
+                rsp.mensajes.Add($"Reporte {year}/{mes} generado correctamente");
+                rsp.tipo = Tipo.Success;
+                rsp.data = true;
+            }
+            catch (System.Exception ex)
+            {
+                rsp.mensajes.Add(ex.Message);
+                rsp.tipo = Tipo.Fail;
+            }
+            return rsp;
         }
     }
 }
