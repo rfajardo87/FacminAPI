@@ -164,7 +164,7 @@ namespace App
                     List<Factura> facturas =
                     db.GetCollection<Factura>("Factura")
                     .Query()
-                    .Where(x => x.fechaPago.Month.Equals(mes) && x.fechaPago.Year.Equals(year))
+                    .Where(x => x.fechaPago.Year.Equals(year) && (-1 == mes || x.fechaPago.Month.Equals(mes)))
                     .ToList();
 
                     ILiteCollection<Concepto> conceptos = db.GetCollection<Concepto>();
