@@ -23,7 +23,7 @@ namespace Models
             this.DbPath = System.IO.Path.Join(path, this.dbFile);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options) => options.UseSqlite($"Data Source=../Dts/{dbFile}");
+        protected override void OnConfiguring(DbContextOptionsBuilder options) => options.UseSqlite($"Data Source=./Dts/{dbFile}");
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

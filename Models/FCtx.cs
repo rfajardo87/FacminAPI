@@ -9,7 +9,7 @@ namespace Models
     {
 
         private const string FileName = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-        private const string path = "../Dts/";
+        private const string path = "./Dts/";
         private string DbPathFileName;
         private string DbPathFile;
 

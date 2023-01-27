@@ -8,7 +8,9 @@ ClientApp/
 Controllers/ClientApp
 Dts/File.db
 Dts/a02cd36e3c781d3e39f24b88088c17871e60557efc32f4150c8aac07329c1095
+Dts/File_old.db
 Dts/auto/**
 Dts/facturas/**
 
 */**/.DS_Store
+.DS_Store
